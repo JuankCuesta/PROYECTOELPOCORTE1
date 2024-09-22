@@ -1,0 +1,52 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+const int analogPin = A0;
+float voltajeMedido = 0;
+const float factorDivision = 36.36;  // Ajusta este valor según tu divisor de tensión
+const float vRef = 1.65;
+
+void setup() {
+  lcd.begin(16, 2);
+  lcd.print("Voltimetro AC");
+  delay(2000);
+  lcd.clear();
+  
+  Serial.begin(9600);
+  analogReference(EXTERNAL);  // Usa AREF para la referencia de 3.3V
+}
+
+void loop() {
+  long sumaADC = 0;
+  const int numMuestras = 100;
+
+  for(int i = 0; i < numMuestras; i++) {
+    int lectura = analogRead(analogPin);
+    sumaADC += lectura;
+    Serial.print("Lectura ADC: ");
+    Serial.println(lectura);
+    delay(1);
+  }
+
+  int valorADC = sumaADC / numMuestras;
+  
+  float voltajePico = (valorADC * vRef) / 1023.0;
+  voltajeMedido = voltajePico * factorDivision * 0.707;
+  
+  Serial.print("ADC promedio: ");
+  Serial.println(valorADC);
+  Serial.print("Voltaje pico: ");
+  Serial.println(voltajePico);
+  Serial.print("Voltaje RMS: ");
+  Serial.println(voltajeMedido);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("V medido (RMS):");
+  lcd.setCursor(0, 1);
+  lcd.print(voltajeMedido, 2);
+  lcd.print(" V");
+
+  delay(1000);
+}
