@@ -1,0 +1,48 @@
+#include <Wire.h>                    // Librería para I2C
+#include <LiquidCrystal_I2C.h>        // Librería para manejar la pantalla LCD I2C
+
+// Crear un objeto para manejar la pantalla LCD (dirección I2C 0x27 o 0x3F según el módulo)
+LiquidCrystal_I2C lcd(0x3F, 16, 2);   // Dirección I2C (ajusta si es diferente), pantalla de 16 columnas y 2 filas
+
+void setup() {
+  // Inicializar la comunicación serial
+  Serial.begin(9600);
+  
+  // Inicializar la pantalla LCD
+  lcd.init();                         // Usar init() en lugar de begin() para inicializar la pantalla LCD
+  lcd.backlight();                    // Encender la luz de fondo del LCD
+  
+  // Mostrar mensaje de inicio en la pantalla LCD
+  lcd.setCursor(0, 0);                // Ubicación en la primera fila
+  lcd.print("Voltimetro Iniciado");   
+  
+  // Mostrar mensaje de inicio en el Monitor Serial
+  Serial.println("Voltimetro Iniciado");
+  delay(2000);                        // Retardo para que se vea el mensaje inicial
+  lcd.clear();                        // Limpiar la pantalla
+}
+
+void loop() {
+  // Leer el valor analógico del pin A0
+  int sensorValue = analogRead(A0);
+  
+  // Convertir el valor a voltaje (ajustar si la referencia es 3.3V o 5V)
+  float voltage = sensorValue * (3.3 / 1023.0);  // Ajusta a 5.0 si estás usando 5V
+  
+  // Escalar para reflejar 120V en lugar de 1.09V
+  float scaledVoltage = voltage * (120.0 / 1.09); 
+  
+  // Imprimir el valor de voltaje escalado en el Monitor Serial
+  Serial.print("Voltaje Medido: ");
+  Serial.print(scaledVoltage);
+  Serial.println(" V RMS");
+
+  // Mostrar el voltaje en la pantalla LCD
+  lcd.setCursor(0, 0);                // Ubicación en la primera fila
+  lcd.print("Voltaje: ");
+  lcd.print(scaledVoltage);           // Mostrar el voltaje medido
+  lcd.print(" V");                    // Mostrar unidad
+  
+  // Retardo para hacer la lectura cada medio segundo
+  delay(500);
+}
